@@ -25,7 +25,7 @@ class Game(ABC):
         pass
 
     @abstractmethod
-    def mine(self, pos: Pos):
+    def open(self, pos: Pos):
         pass
 
     @abstractmethod

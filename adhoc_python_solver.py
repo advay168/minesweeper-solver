@@ -87,7 +87,7 @@ class AdhocPythonSolver(Solver):
             possibles = self.open_neighbours[pos]
             if n == self.no_flag_neighbours[pos]:
                 for possible in possibles:
-                    self.log(f"TACTIC B:{pos} {possibles} {n}: Mining {possible}")
+                    self.log(f"TACTIC B:{pos} {possibles} {n}: Opening {possible}")
                     return False, possible
 
     def tactic_C(self):
@@ -95,7 +95,7 @@ class AdhocPythonSolver(Solver):
             for group2 in self.mutex_groups:
                 if group1.issubset(group2):
                     for p in group2 - group1:
-                        self.log(f"TACTIC C:{group2} {group1}: Mining {p}")
+                        self.log(f"TACTIC C:{group2} {group1}: Opening {p}")
                         return False, p
 
     def tactic_D(self):
@@ -128,7 +128,7 @@ class AdhocPythonSolver(Solver):
                 ps = possibles - set().union(*mutexes)
                 if n - len(mutexes) == 0:
                     for possible in ps:
-                        self.log(f"tactic E:{pos} {ps} {mutexes}: Mining {possible}")
+                        self.log(f"tactic E:{pos} {ps} {mutexes}: Opening {possible}")
                         return False, possible
 
     def tactic_F(self):
@@ -159,7 +159,7 @@ class AdhocPythonSolver(Solver):
             for group2 in self.double_mutex_groups:
                 if group1.issubset(group2):
                     for p in group2 - group1:
-                        self.log(f"TACTIC G:{group2} {group1}: Mining {p}")
+                        self.log(f"TACTIC G:{group2} {group1}: Opening {p}")
                         return False, p
 
     def tactic_H(self):
@@ -195,7 +195,7 @@ class AdhocPythonSolver(Solver):
                 if n - 2 * len(double_mutexes) == 0:
                     for possible in ps:
                         self.log(
-                            f"TACTIC I:{pos} {ps} {double_mutexes}: Mining {possible}"
+                            f"TACTIC I:{pos} {ps} {double_mutexes}: Opening {possible}"
                         )
                         return False, possible
 
@@ -230,7 +230,7 @@ class AdhocPythonSolver(Solver):
         if count == self.flags:
             for pos, v in board.items():
                 if v == "?":
-                    self.log(f"TACTIC K:All flagged: Mining {pos}")
+                    self.log(f"TACTIC K:All flagged: Opening {pos}")
                     return False, pos
 
     def _divide_disjoint(self, lst: list[frozenset]):

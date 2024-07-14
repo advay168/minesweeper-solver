@@ -27,8 +27,8 @@ def run(game: Game, solver: Solver, handle_unsolved, log):
                         log(f"FLAG at {pos}")
                         game.flag(pos)
                     else:
-                        log(f"MINE at {pos}")
-                        game.mine(pos)
+                        log(f"OPEN at {pos}")
+                        game.open(pos)
                 case None:
                     if game.update():
                         continue

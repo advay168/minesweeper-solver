@@ -91,7 +91,7 @@ class GoogleSeleniumGame(Game):
         return (self.cols, self.rows)
 
     def start(self):
-        self.mine(self.initial)
+        self.open(self.initial)
         time.sleep(1.5)
 
     def flag(self, pos):
@@ -103,11 +103,11 @@ class GoogleSeleniumGame(Game):
         if self.show_flags:
             self.move_to(pos).context_click().perform()
 
-    def mine(self, pos):
+    def open(self, pos):
         if self._board[pos] != "?":
             breakpoint()
         self.stale = True
-        self.log("Mining", pos)
+        self.log("Opening", pos)
         self._board[pos] = "#"
         self.move_to(pos).click().perform()
 
