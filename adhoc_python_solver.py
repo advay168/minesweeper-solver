@@ -25,7 +25,7 @@ class AdhocPythonSolver(Solver):
         return inspect.getsource(self.__class__)
 
     def calc_info(self):
-        board = self.game.get_board()
+        board = self.game.board
         self.numeric = {}
         for pos, v in board.items():
             if v.isdigit():
@@ -229,7 +229,7 @@ class AdhocPythonSolver(Solver):
 
     def tactic_K(self):
         count = 0
-        board = self.game.get_board()
+        board = self.game.board
         for v in board.values():
             count += v == "F"
         if count == self.flags:
@@ -259,7 +259,7 @@ class AdhocPythonSolver(Solver):
 
     def _neighbours(self, pos: Pos):
         x, y = pos
-        cols, rows = self.game.num_dimensions
+        cols, rows = self.game.dimensions
         for dx in (-1, 0, 1):
             for dy in (-1, 0, 1):
                 if dx == dy == 0:

@@ -13,7 +13,7 @@ from haskell_solver import HaskellSolver
 from solver import Solver
 
 
-def run(game: Game, solver: Solver, handle_unsolved, log, check: bool):
+def run(game: Game, solver: Solver, handle_unsolved, log):
     start = time.time()
     game.start()
     game.update()
@@ -29,8 +29,6 @@ def run(game: Game, solver: Solver, handle_unsolved, log, check: bool):
                     else:
                         log(f"OPEN at {pos}")
                         game.open(pos)
-                    if check:
-                        game.update()
                 case None:
                     if game.update():
                         continue
@@ -68,8 +66,9 @@ def main():
         "-s", "--skip-flags", action="store_true", help="Don't mark flags in gui"
     )
 
-
-    parser.add_argument("-c", "--check", action="store_true", help="Double check each move")
+    parser.add_argument(
+        "-c", "--check", action="store_true", help="Double check each move"
+    )
 
     args = parser.parse_args()
 
@@ -97,10 +96,11 @@ def main():
         log = functools.partial(print, file=log_file, flush=True)
 
         game = GoogleSeleniumGame(
-            args.level,
-            show_flags=not args.skip_flags,
+            level=args.level,
             headless=args.headless,
             mute=args.mute,
+            show_flags=not args.skip_flags,
+            check=args.check,
             log=log,
         )
 
@@ -110,11 +110,12 @@ def main():
             solver = HaskellSolver(game=game, log=log)
 
         solver_src = solver.get_source()
+        log("- vim: cul:cuc ") # Modeline
         log("---<Solver Code>---")
         log(solver_src)
         log("---</Solver Code>---")
 
-        run(game, solver, handle_unsolved, log, args.check)
+        run(game, solver, handle_unsolved, log)
 
 
 if __name__ == "__main__":
