@@ -197,6 +197,11 @@ class GoogleSeleniumGame(Game):
                     breakpoint()
                     raise SystemExit()
 
+        if not self.show_flags:
+            for pos, cell in prev.items():
+                if cell == "F":
+                    self._board[pos] = "F"
+
         self.init = False
         self.stale = False
         return True

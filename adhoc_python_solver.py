@@ -1,3 +1,5 @@
+import inspect
+
 from game import Game, Pos
 from solver import Solver
 
@@ -18,6 +20,9 @@ class AdhocPythonSolver(Solver):
     def next_pos(self):
         self.calc_info()
         return self.run_tactics()
+    
+    def get_source(self) -> str:
+        return inspect.getsource(self.__class__)
 
     def calc_info(self):
         board = self.game.get_board()

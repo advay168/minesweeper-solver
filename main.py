@@ -1,7 +1,6 @@
 import argparse
 import datetime
 import functools
-import inspect
 import pathlib
 import random
 import shutil
@@ -10,10 +9,11 @@ import time
 from adhoc_python_solver import AdhocPythonSolver
 from game import Game, GameOver
 from google_selenium_game import GoogleSeleniumGame
+from haskell_solver import HaskellSolver
 from solver import Solver
 
 
-def run(game: Game, solver: Solver, handle_unsolved, log):
+def run(game: Game, solver: Solver, handle_unsolved, log, check: bool):
     start = time.time()
     game.start()
     game.update()
@@ -29,6 +29,8 @@ def run(game: Game, solver: Solver, handle_unsolved, log):
                     else:
                         log(f"OPEN at {pos}")
                         game.open(pos)
+                    if check:
+                        game.update()
                 case None:
                     if game.update():
                         continue
@@ -36,15 +38,23 @@ def run(game: Game, solver: Solver, handle_unsolved, log):
                     handle_unsolved()
                     return
     except GameOver:
-        log("Game Over")
         end = time.time()
+        log("Game Over")
         log(f"Took {round(end-start)}s")
+        print("Game Over")
+        print(f"Took {round(end-start)}s")
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "-H", "--headless", action="store_true", help="Run without browser gui"
+    )
+    parser.add_argument(
+        "--solver",
+        choices=["py", "hs"],
+        default="py",
+        help="Choose solver",
     )
     parser.add_argument(
         "-l",
@@ -57,6 +67,10 @@ def main():
     parser.add_argument(
         "-s", "--skip-flags", action="store_true", help="Don't mark flags in gui"
     )
+
+
+    parser.add_argument("-c", "--check", action="store_true", help="Double check each move")
+
     args = parser.parse_args()
 
     game_id = f"{datetime.datetime.now().strftime('%Y-%m-%d---%H-%M-%S---%f')}---{random.randint(1, 100)}"
@@ -90,14 +104,17 @@ def main():
             log=log,
         )
 
-        solver = AdhocPythonSolver(game=game, log=log)
+        if args.solver == "py":
+            solver = AdhocPythonSolver(game=game, log=log)
+        else:
+            solver = HaskellSolver(game=game, log=log)
 
-        solver_src = inspect.getsource(solver.__class__)
+        solver_src = solver.get_source()
         log("---<Solver Code>---")
         log(solver_src)
         log("---</Solver Code>---")
 
-        run(game, solver, handle_unsolved, log)
+        run(game, solver, handle_unsolved, log, args.check)
 
 
 if __name__ == "__main__":
