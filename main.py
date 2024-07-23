@@ -64,7 +64,10 @@ def main():
     )
 
     parser.add_argument(
-        "-c", "--check", action="store_true", help="Update and check for inconsistencies on each move"
+        "-c",
+        "--check",
+        action="store_true",
+        help="Update and check for inconsistencies on each move",
     )
 
     parser.add_argument(
@@ -95,6 +98,7 @@ def main():
     with log_file_path.open("w") as log_file:
         print("Starting", log_file_path)
         verbose = args.verbose
+
         def log(*args, **kwargs):
             print(*args, **kwargs, file=log_file, flush=True)
             if verbose:
@@ -115,7 +119,7 @@ def main():
             solver = HaskellSolver(game=game, log=log)
 
         solver_src = solver.get_source()
-        log("- vim: cul:cuc ") # Modeline
+        log("- vim: cul:cuc ")  # Modeline
         log("---<Solver Code>---")
         log(solver_src)
         log("---</Solver Code>---")

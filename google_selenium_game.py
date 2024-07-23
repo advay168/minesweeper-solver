@@ -2,9 +2,9 @@ import io
 import json
 import time
 import pathlib
+import tkinter as tk
 
-from PIL import Image
-import matplotlib.pyplot as plt
+from PIL import Image, ImageTk
 import numpy as np
 from selenium import webdriver
 from selenium.webdriver.common.action_chains import ActionChains
@@ -129,35 +129,83 @@ class GoogleSeleniumGame(Game):
 
         self._move_to(self.initial).perform()
         ss = self._get_board_screenshot()
-        lut = self.lookup[self.level]
+        self.settled = False
         for x in range(self.cols):
             for y in range(self.rows):
                 n, thumbnail = self._characterise(ss, x, y)
-                if n in lut and lut[n] != "":
-                    self._board[(x, y)] = self.lookup[self.level][n]
-                else:
-                    if not self.first_time:
-                        # Settle board
-                        time.sleep(1)
-                        a = self._get_board_screenshot()
-                        if self._characterise(a, *self.initial)[0] not in lut:
-                            raise GameOver()
+                if not (n in self.lookup[self.level] and self.lookup[self.level][n] != ""):
+                    self._handle_missing(n, thumbnail)
+                self._board[(x, y)] = self.lookup[self.level][n]
 
-                    # Check if lookup updated in between (occurs with simultaneous processes)
-                    self._reload_lookup()
-                    if n in lut and lut[n] != "":
-                        return self._update()
+    def _handle_missing(self, n, thumbnail):
+        lut = self.lookup[self.level]
+        if not self.first_time and not self.settled:
+            # Settle board
+            self.settled = True
+            time.sleep(1)
+            a = self._get_board_screenshot()
+            if self._characterise(a, *self.initial)[0] not in lut:
+                raise GameOver()
 
-                    # Prompt user
-                    self.lookup[self.level][n] = ""
-                    self._write_lookup()
+        # Check if lookup updated in between (occurs with simultaneous processes)
+        self._reload_lookup()
+        if n in lut and lut[n] != "":
+            return
 
-                    plt.imshow(thumbnail)
-                    plt.title(n)
-                    plt.show()
+        # Prompt user
+        if classification := self._prompt(thumbnail):
+            self._reload_lookup()
+            self.lookup[self.level][n] = classification
+            self._write_lookup()
 
-                    self._reload_lookup()
-                    return self._update()
+    def _prompt(self, thumbnail):
+        root = tk.Tk()
+        root.title("Classify Cell")
+        root.geometry("+20+20")
+
+        photo = ImageTk.PhotoImage(Image.fromarray(thumbnail).resize((300, 300)))
+
+        image_label = tk.Label(root, image=photo)
+        image_label.grid(row=0, column=0, padx=10, pady=10)
+
+        button_frame = tk.Frame(root)
+        button_frame.grid(row=1, column=0, padx=10, pady=10)
+
+        output = ""
+
+        def on_click(b: str):
+            nonlocal output
+            output = b
+            root.destroy()
+
+        def quit():
+            print("Quitting")
+            root.destroy()
+            raise SystemExit()
+
+        buttons = {
+            "0": (0, 0),
+            "1": (0, 1),
+            "2": (0, 2),
+            "3": (0, 3),
+            "4": (0, 4),
+            "5": (0, 5),
+            "6": (1, 0),
+            "7": (1, 1),
+            "8": (1, 2),
+            "?": (1, 3),
+            "F": (1, 4),
+        }
+
+        for b, (row, col) in buttons.items():
+            button = tk.Button(button_frame, text=b, command=lambda b=b: on_click(b))
+            button.grid(row=row, column=col, pady=5, ipadx=10, ipady=10)
+
+        button = tk.Button(button_frame, text="Quit", command=quit)
+        button.grid(row=1, column=5, pady=5, ipady=10)
+
+        root.mainloop()
+        return output
 
     def _characterise(self, img, x, y):
         pad = 7

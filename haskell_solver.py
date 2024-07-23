@@ -27,11 +27,13 @@ class HaskellSolver(Solver):
 
         # Don't let handler capture `self` so browser closes gracefully
         haskell_logfile = self.instance.stderr
+
         def f():
             assert haskell_logfile
             for line in iter(haskell_logfile):
                 line = line.decode("ascii").strip()
                 log(line)
+
         self.logger = threading.Thread(target=f, daemon=True).start()
 
     def next_pos(self) -> tuple[bool, Pos] | None:
