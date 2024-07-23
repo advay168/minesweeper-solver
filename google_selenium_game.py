@@ -37,6 +37,7 @@ class GoogleSeleniumGame(Game):
         self.lookup_file_path = lookup_file_path
 
         options = webdriver.ChromeOptions()
+        options.add_argument("--log-level=3")
         if self.headless:
             options.add_argument("--headless")
             options.add_argument("--remote-allow-origins=*")
@@ -99,7 +100,7 @@ class GoogleSeleniumGame(Game):
         time.sleep(1.5)
 
     def _flag(self, pos):
-            self._move_to(pos).context_click().perform()
+        self._move_to(pos).context_click().perform()
 
     def _open(self, pos):
         self._move_to(pos).click().perform()
@@ -157,7 +158,6 @@ class GoogleSeleniumGame(Game):
 
                     self._reload_lookup()
                     return self._update()
-
 
     def _characterise(self, img, x, y):
         pad = 7

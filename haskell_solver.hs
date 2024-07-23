@@ -1,6 +1,8 @@
 {-# LANGUAGE TupleSections #-}
 {-# OPTIONS_GHC -Wincomplete-patterns #-}
 
+import Control.Applicative
+import Control.Exception
 import Control.Monad
 import Data.Char
 import Data.List
@@ -16,7 +18,7 @@ data Cell
   | Flag
   | Digit Int
   | UnknownDigit
-  deriving (Show, Eq)
+  deriving (Eq)
 
 type Board = M.Map Pos Cell
 
@@ -24,7 +26,12 @@ data Game = Game Board Int
 
 getBoard (Game board _) = board
 
-data Proof = Root Pos | Expanded (Constraint, Constraint) deriving (Show)
+data Proof
+  = TotalFlags
+  | Root Pos
+  | Expanded (Constraint, Constraint)
+  | Dexpanded (Constraint, Constraint)
+  deriving (Show)
 
 data Constraint
   = Exactly Proof Int [Pos]
@@ -34,8 +41,6 @@ type Constraints = [Constraint]
 
 instance Eq Constraint where
   Exactly _ n1 p1 == Exactly _ n2 p2 = n1 == n2 && p1 == p2
-
-exactly proof n poses = Exactly proof n (nub $ sort poses)
 
 data Action = FlagPos Pos | OpenPos Pos | IDK
 
@@ -47,47 +52,38 @@ instance Monoid Action where
   mempty = IDK
 
 solve :: Game -> Action
-solve game = tacticA game <> mconcat ([tacticB, tacticC] <*> constraints)
+solve (Game board totalFlags) = mconcat (totalFlagsConstraint : constraints <**> [tacticMine, tacticOpen])
   where
-    board = getBoard game
+    totalFlagsConstraint = Exactly TotalFlags unFlagged flaggable
+    (unFlagged, flaggable) =
+      M.foldlWithKey'
+        ( \(count, poses) pos cell -> case cell of
+            Unknown -> (count, pos : poses)
+            Flag -> (count - 1, poses)
+            _ -> (count, poses)
+        )
+        (totalFlags, [])
+        board
     constraints = generateAll $ initialConstraints board
 
-tacticA :: Game -> Action
-tacticA (Game board totalFlags) =
-  if flags == totalFlags
-    then action
-    else IDK
-  where
-    flags = length . filter (== Flag) . M.elems $ board
-    action = case filter ((== Unknown) . snd) $ M.toList board of
-      [] -> IDK
-      ((pos, _) : _) -> trace ("Opening because of all flagged" ++ show pos) $ OpenPos pos
+tacticMine :: Constraint -> Action
+tacticMine (Exactly proof n poses@(pos : _)) | n == length poses = trace ("Mining " ++ show pos ++ " because of " ++ show proof) $ FlagPos pos
+tacticMine _ = IDK
 
-tacticB :: Constraint -> Action
-tacticB (Exactly proof n poses@(pos : _)) | n == length poses = trace ("Mining " ++ show pos ++ " because of " ++ show proof) $ FlagPos pos
-tacticB _ = IDK
-
-tacticC :: Constraint -> Action
-tacticC (Exactly proof 0 (pos : _)) = trace ("Opening " ++ show pos ++ " because of " ++ show proof) $ OpenPos pos
-tacticC _ = IDK
-
--- xs `takenOutFrom` ys == if xs `isSubsetOf` ys then Just (ys // xs) else Nothing
-takenOutFrom :: Ord a => [a] -> [a] -> Maybe [a]
-takenOutFrom [] xs = Just xs
-takenOutFrom (_ : _) [] = Nothing
-takenOutFrom xxs@(x : xs) (y : ys) = case compare x y of
-  LT -> Nothing
-  GT -> (y :) <$> takenOutFrom xxs ys
-  EQ -> takenOutFrom xs ys
+tacticOpen :: Constraint -> Action
+tacticOpen (Exactly proof 0 (pos : _)) = trace ("Opening " ++ show pos ++ " because of " ++ show proof) $ OpenPos pos
+tacticOpen _ = IDK
 
 expandConstraints :: Constraints -> Constraints
 expandConstraints constraints = do
-  p1@(Exactly _ n1 c1s) <- constraints
-  p2@(Exactly _ n2 c2s) <- constraints
-  case c1s `takenOutFrom` c2s of
-    Just [] -> []
-    Just remaining -> return $ Exactly (Expanded (p1, p2)) (n2 - n1) remaining
-    Nothing -> []
+  p1@(Exactly _ n1 p1s) <- constraints
+  p2@(Exactly _ n2 p2s) <- constraints
+  case (p1s \\ p2s, p2s \\ p1s) of
+    ([], []) -> assert (n2 - n1 == 0) []
+    ([], remaining) -> return $ Exactly (Expanded (p1, p2)) (n2 - n1) remaining
+    (_, remaining)
+      | n2 - n1 == length remaining -> return $ Exactly (Dexpanded (p1, p2)) (n2 - n1) remaining -- Guaranteed to trigger tactic
+    _ -> []
 
 generateAll :: Constraints -> Constraints
 generateAll constraints = constraints ++ (if null next then [] else generateAll (constraints ++ next))
@@ -104,7 +100,7 @@ initialConstraints board = mapMaybe generate $ M.toList board
           count acc _ = acc
        in if null lst
             then Nothing
-            else Just $ exactly (Root pos) n' lst
+            else Just $ Exactly (Root pos) n' lst
     generate (pos, _) = Nothing
 
 neighboursWithCells :: Board -> Pos -> [(Pos, Cell)]

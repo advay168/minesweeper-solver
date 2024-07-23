@@ -67,7 +67,6 @@ class Game(ABC):
                     continue
                 else:
                     msg = f"GAME CORRUPTED!\nExpecting '{prev[pos]}' but found '{board[pos]}' at {pos}"
-                    print(msg)
                     self.log(msg)
                     breakpoint()
                     raise SystemExit()
@@ -116,7 +115,7 @@ class Game(ABC):
         if not self.show_flags:
             for pos, v in self.board.items():
                 if v == "F":
-                    self.flag(pos)
+                    self._flag(pos)
         return self._save_screenshot(path)
 
     @property

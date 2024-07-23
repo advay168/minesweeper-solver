@@ -1,6 +1,5 @@
 import argparse
 import datetime
-import functools
 import pathlib
 import random
 import shutil
@@ -39,8 +38,6 @@ def run(game: Game, solver: Solver, handle_unsolved, log):
         end = time.time()
         log("Game Over")
         log(f"Took {round(end-start)}s")
-        print("Game Over")
-        print(f"Took {round(end-start)}s")
 
 
 def main():
@@ -67,7 +64,11 @@ def main():
     )
 
     parser.add_argument(
-        "-c", "--check", action="store_true", help="Double check each move"
+        "-c", "--check", action="store_true", help="Update and check for inconsistencies on each move"
+    )
+
+    parser.add_argument(
+        "-v", "--verbose", action="store_true", help="Print log output to stdout"
     )
 
     args = parser.parse_args()
@@ -93,7 +94,11 @@ def main():
 
     with log_file_path.open("w") as log_file:
         print("Starting", log_file_path)
-        log = functools.partial(print, file=log_file, flush=True)
+        verbose = args.verbose
+        def log(*args, **kwargs):
+            print(*args, **kwargs, file=log_file, flush=True)
+            if verbose:
+                print(*args, **kwargs)
 
         game = GoogleSeleniumGame(
             level=args.level,

@@ -38,7 +38,7 @@ class HaskellSolver(Solver):
         assert self.instance.stdin
         assert self.instance.stdout
 
-        board = self.game.get_board()
+        board = self.game.board
         serialised_board = str(list(board.items()))
         self.instance.stdin.write(str(self.game.num_flags).encode("ascii"))
         self.instance.stdin.write(b" ")
