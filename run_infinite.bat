@@ -1,1 +1,1 @@
-for /L %%N in () do python main.py %*
+for /L %%N in () do python src/main.py %*

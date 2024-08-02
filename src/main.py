@@ -78,7 +78,7 @@ def main():
 
     game_id = f"{datetime.datetime.now().strftime('%Y-%m-%d---%H-%M-%S---%f')}---{random.randint(1, 100)}"
 
-    log_dir = pathlib.Path(__file__).parent / "logs/"
+    log_dir = pathlib.Path(__file__).parent.parent / "logs/"
 
     log_file_path = log_dir / "games" / f"{game_id}.game"
     log_file_path.parent.mkdir(exist_ok=True, parents=True)
