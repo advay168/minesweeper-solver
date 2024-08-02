@@ -16,6 +16,11 @@ Solves [Minesweeper](https://en.wikipedia.org/wiki/Minesweeper_(video_game)) usi
 - [GHC](https://www.haskell.org/ghcup/) (for haskell backend)
 
 ## Build/Run Instructions
+### TLDR
+```
+python src/main.py
+```
+### Full Instructions
 - Clone repository
 ```
 git clone https://github.com/advay168/minesweeper-solver
