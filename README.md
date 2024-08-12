@@ -2,6 +2,13 @@
 
 Solves [Minesweeper](https://en.wikipedia.org/wiki/Minesweeper_(video_game)) using an automated browser and custom constraint based solver.
 
+## Demo
+
+https://github.com/user-attachments/assets/f1b60385-13c7-4c36-961f-1cc79f9c2cec
+
+
+
+
 ## Features
 - Currently has one frontend and two backends:
   - (Frontend) Google builtin minesweeper game automated with selenium (can also be run `--headless`)
@@ -48,3 +55,8 @@ python src/main.py -h
 ```
 run_infinite.bat {args to forward to main.py}
 ```
+
+## Limitations
+- Selneium is quite slow and is the bottleneck. Other frontends can be added such as using pupeeter or a custom ui.
+- If the game is unsolveable then it aborts instead of guessing the most likely move using heuristics.
+
