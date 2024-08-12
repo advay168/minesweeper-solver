@@ -38,6 +38,7 @@ class GoogleSeleniumGame(Game):
 
         options = webdriver.ChromeOptions()
         options.add_argument("--log-level=3")
+        options.add_argument("--start-maximized")
         if self.headless:
             options.add_argument("--headless")
             options.add_argument("--remote-allow-origins=*")
@@ -50,7 +51,6 @@ class GoogleSeleniumGame(Game):
 
         self.driver.find_element(By.XPATH, "//*[contains(text(), 'Play')]").click()
         self.canvas = self.driver.find_element(By.TAG_NAME, "canvas")
-        # self.driver.maximize_window()
         time.sleep(0.5)
 
         match self.level:
@@ -146,7 +146,7 @@ class GoogleSeleniumGame(Game):
 
     def _update(self):
         # Fuzz test different window sizes
-        if True:
+        if False:
             self.driver.set_window_size(
                 np.random.randint(self.cols * 35, 1500),
                 np.random.randint(self.rows * 35, 900),
