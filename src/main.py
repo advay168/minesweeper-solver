@@ -3,6 +3,7 @@ import datetime
 import pathlib
 import random
 import shutil
+import sys
 import time
 
 from adhoc_python_solver import AdhocPythonSolver
@@ -10,7 +11,6 @@ from game import Game, GameOver
 from google_selenium_game import GoogleSeleniumGame
 from haskell_solver import HaskellSolver
 from solver import Solver
-
 
 def run(game: Game, solver: Solver, handle_unsolved, log):
     start = time.time()
@@ -39,9 +39,9 @@ def run(game: Game, solver: Solver, handle_unsolved, log):
         log("Game Over")
         log(f"Took {round(end-start)}s")
 
-
-def main():
+def get_args():
     parser = argparse.ArgumentParser()
+
     parser.add_argument(
         "-H", "--headless", action="store_true", help="Run without browser gui"
     )
@@ -74,8 +74,25 @@ def main():
         "-v", "--verbose", action="store_true", help="Print log output to stdout"
     )
 
-    args = parser.parse_args()
+    return parser.parse_args()
 
+
+def main():
+    if any(map(sys.argv.__contains__, ["--cli", "-h", "--help"])):
+        if "--cli" in sys.argv:
+            sys.argv.remove("--cli")
+        if "-h" in sys.argv or "--help" in sys.argv:
+            print("Pass no arguments to the program to use the GUI")
+    else:
+        import ctypes
+        try:
+            ctypes.windll.shcore.SetProcessDpiAwareness(True)
+        except:
+            pass
+        from gooey import Gooey
+        global get_args
+        get_args = Gooey(get_args)
+    args = get_args()
     game_id = f"{datetime.datetime.now().strftime('%Y-%m-%d---%H-%M-%S---%f')}---{random.randint(1, 100)}"
 
     log_dir = pathlib.Path(__file__).parent.parent / "logs/"

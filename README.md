@@ -6,8 +6,8 @@ Solves [Minesweeper](https://en.wikipedia.org/wiki/Minesweeper_(video_game)) usi
 
 https://github.com/user-attachments/assets/f1b60385-13c7-4c36-961f-1cc79f9c2cec
 
-
-
+> [!NOTE]  
+> The demo video is slightly outdated. Append `--cli` to the command so that the GUI does not pop up.
 
 ## Features
 - Currently has one frontend and two backends:
@@ -16,6 +16,7 @@ https://github.com/user-attachments/assets/f1b60385-13c7-4c36-961f-1cc79f9c2cec
   - (Backend) (`--solver hs`) Generalised constraint based solver written in haskell (with psuedo proofs for its moves)
 - Saves log files for each game with detailed information for each action (to `./logs/`)
 - Written in modular manner to allow adding additional frontends and backends with ease
+- GUI+CLI using [Gooey](https://github.com/chriskiehl/Gooey) (pass `--cli` to use on command line)
 
 ## Requirements
 - Python
@@ -43,7 +44,7 @@ python -m venv .venv
 ```
 pip install -r requirements.txt
 ```
-- Run with default settings
+- Run with default settings and GUI
 ```
 python src/main.py
 ```
@@ -51,7 +52,7 @@ python src/main.py
 ```
 python src/main.py -h
 ```
-- Run program indefinitely (only windows script available for now)
+- Run program indefinitely (only a Windows script available for now)
 ```
 run_infinite.bat {args to forward to main.py}
 ```
